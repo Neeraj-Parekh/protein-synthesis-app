@@ -67,6 +67,7 @@ const ProteinComparison: React.FC<ProteinComparisonProps> = ({
     if (proteinIds.length >= 2 && !comparisons[comparisonKey]) {
       handleCompare();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proteinIds, comparisonType]);
 
   useEffect(() => {

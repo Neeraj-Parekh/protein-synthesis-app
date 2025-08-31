@@ -78,10 +78,6 @@ const ModelManager: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     await Promise.all([
       loadModels(),
@@ -89,6 +85,11 @@ const ModelManager: React.FC = () => {
       loadStatus()
     ]);
   };
+
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadModels = async () => {
     try {
