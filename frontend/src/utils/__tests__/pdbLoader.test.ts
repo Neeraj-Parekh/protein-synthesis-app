@@ -201,7 +201,7 @@ END`;
 HETATM    1  O   HOH A 101       1.234   5.678   9.012  1.00 20.00           O  
 END`;
 
-      const protein = await parsePDBFile(hetatomOnlyPDB);
+      const protein = await parsePDBFile(hetatomOnlyPDB, { includeWater: true });
       expect(protein.atoms).toHaveLength(1);
       expect(protein.atoms[0].atomType).toBe('hetero');
     });

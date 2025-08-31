@@ -156,6 +156,12 @@ export async function parsePDBFile(
     // Calculate center of mass
     const centerOfMass = vector3Utils.center(positions);
 
+    // Validate that we have some meaningful content
+    const hasValidStructure = atoms.length > 0 || chains.size > 0 || proteinId.length > 0;
+    if (!hasValidStructure) {
+      throw new PDBParseError('No valid protein structure found in PDB content');
+    }
+
     // Create protein structure
     const proteinStructure: ProteinStructure = {
       id: proteinId,
