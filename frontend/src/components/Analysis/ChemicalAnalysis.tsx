@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { analyzeProtein } from '../../store/slices/analysisSlice';
-import { ProteinStructure, ChemicalProperties, SequenceAnalysis } from '../../types/protein';
+import { ProteinStructure, SequenceAnalysis } from '../../types/protein';
 import SequenceViewer from './SequenceViewer';
 import PropertiesChart from './PropertiesChart';
 import SecondaryStructureView from './SecondaryStructureView';
@@ -163,7 +163,7 @@ const ChemicalAnalysis: React.FC<ChemicalAnalysisProps> = ({
                       <Box key={aa} display="flex" justifyContent="space-between" py={0.5}>
                         <Typography variant="body2">{aa}</Typography>
                         <Typography variant="body2" fontWeight="bold">
-                          {count} ({((count / protein?.sequence.length!) * 100).toFixed(1)}%)
+                          {count} ({((count / (protein?.sequence.length || 1)) * 100).toFixed(1)}%)
                         </Typography>
                       </Box>
                     ))}

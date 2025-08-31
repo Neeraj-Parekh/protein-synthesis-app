@@ -12,7 +12,7 @@ import {
   TableRow,
   Chip
 } from '@mui/material';
-import { StructuralComparison as StructuralComparisonType, ProteinStructure, ComparisonDomain } from '../../types/protein';
+import { StructuralComparison as StructuralComparisonType, ProteinStructure } from '../../types/protein';
 
 interface StructuralComparisonProps {
   structuralComparison?: StructuralComparisonType;

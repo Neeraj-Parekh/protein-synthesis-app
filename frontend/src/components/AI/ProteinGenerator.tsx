@@ -34,7 +34,7 @@ const ProteinGenerator: React.FC<ProteinGeneratorProps> = ({
   onGenerationComplete
 }) => {
   const dispatch = useAppDispatch();
-  const { generations, loading, error } = useAppSelector(state => state.ai);
+  const { loading, error } = useAppSelector(state => state.ai);
   
   // Form state
   const [model, setModel] = useState<'esm3' | 'esm3_chat' | 'rfdiffusion' | 'protflash'>('esm3');
@@ -74,12 +74,6 @@ const ProteinGenerator: React.FC<ProteinGeneratorProps> = ({
         targetPI
       };
     }
-
-    const options = {
-      temperature,
-      numSamples,
-      customPrompt: customPrompt.trim() || undefined
-    };
 
     try {
       const result = await dispatch(generateProtein(constraints)).unwrap();

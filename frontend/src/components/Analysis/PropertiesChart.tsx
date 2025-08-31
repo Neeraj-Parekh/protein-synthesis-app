@@ -98,7 +98,7 @@ const PropertiesChart: React.FC<PropertiesChartProps> = ({
                 label={{ value: 'Hydrophobicity', angle: -90, position: 'insideLeft' }}
               />
               <Tooltip 
-                formatter={(value, name, props) => [
+                formatter={(value, _name, _props) => [
                   `${typeof value === 'number' ? value.toFixed(2) : value}`,
                   'Hydrophobicity'
                 ]}
@@ -133,7 +133,7 @@ const PropertiesChart: React.FC<PropertiesChartProps> = ({
                 label={{ value: 'Charge', angle: -90, position: 'insideLeft' }}
               />
               <Tooltip 
-                formatter={(value, name, props) => [
+                formatter={(value, _name, _props) => [
                   `${typeof value === 'number' && value > 0 ? '+' : ''}${value}`,
                   'Charge'
                 ]}
@@ -194,7 +194,7 @@ const PropertiesChart: React.FC<PropertiesChartProps> = ({
               <XAxis dataKey="aa" />
               <YAxis />
               <Tooltip 
-                formatter={(value, name) => [`${value} (${aaFrequency.find(item => item.count === value)?.percentage.toFixed(1)}%)`, 'Count']}
+                formatter={(value, _name) => [`${value} (${aaFrequency.find(item => item.count === value)?.percentage.toFixed(1)}%)`, 'Count']}
               />
               <Bar dataKey="count" fill="#2ecc71" />
             </BarChart>

@@ -12,7 +12,6 @@ import {
   TextField,
   Grid,
   Typography,
-  Box,
   Slider,
   FormControlLabel,
   Switch,

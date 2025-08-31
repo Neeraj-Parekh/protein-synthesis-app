@@ -28,8 +28,7 @@ import {
   Psychology as PsychologyIcon,
   CloudDone as CloudDoneIcon,
   CloudOff as CloudOffIcon,
-  PlayArrow as PlayArrowIcon,
-  Stop as StopIcon
+  PlayArrow as PlayArrowIcon
 } from '@mui/icons-material'
 import { largeAiAPI } from '../services/api'
 

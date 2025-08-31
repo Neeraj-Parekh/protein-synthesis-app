@@ -11,7 +11,6 @@ import {
   Chain,
   ProteinStructure,
   AminoAcidType,
-  SecondaryStructureType,
   ChemicalProperties,
   AminoAcidComposition,
   GenerationConstraints,

@@ -17,15 +17,12 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  IconButton,
-  Tooltip,
   CircularProgress,
   Accordion,
   AccordionSummary,
   AccordionDetails
 } from '@mui/material';
 import {
-  Download,
   CheckCircle,
   Error,
   Info,
