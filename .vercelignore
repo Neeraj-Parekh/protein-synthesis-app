@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Build outputs (keep dist for deployment)
+# dist/
+# build/
+*.egg-info/
+
+# Environment variables (local only)
+.env.local
+.env.development.local
+.env.test.local
+
+# Database (local only)
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# AI Models (too large)
+models/
+*.pt
+*.pth
+*.onnx
+*.pkl
+
+# Test files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation
+*.md
+docs/
+
+# External model storage
+/mnt/*/ollama-models/
+ollama-models/
+external-models/
