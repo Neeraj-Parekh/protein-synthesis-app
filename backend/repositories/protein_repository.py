@@ -86,9 +86,6 @@ class ProteinRepository(BaseRepository[ProteinDB, ProteinCreate, Dict[str, Any]]
         # Validate input data
         self.validate_create_data(obj_in)
         
-        # Generate unique ID
-        protein_id = str(uuid.uuid4())
-        
         # Calculate molecular weight and length
         sequence = obj_in.sequence.upper().strip()
         molecular_weight = self._calculate_molecular_weight(sequence)
@@ -96,12 +93,11 @@ class ProteinRepository(BaseRepository[ProteinDB, ProteinCreate, Dict[str, Any]]
         
         # Create protein data
         protein_data = {
-            'id': protein_id,
             'name': obj_in.name.strip(),
             'sequence': sequence,
             'molecular_weight': molecular_weight,
             'length': length,
-            'metadata': {}
+            'extra_metadata': {}
         }
         
         try:
@@ -110,7 +106,7 @@ class ProteinRepository(BaseRepository[ProteinDB, ProteinCreate, Dict[str, Any]]
             self.db.commit()
             self.db.refresh(db_obj)
             
-            logger.info(f"Created protein '{obj_in.name}' with ID: {protein_id}")
+            logger.info(f"Created protein '{obj_in.name}' with ID: {db_obj.id}")
             return db_obj
             
         except Exception as e:
@@ -240,10 +236,10 @@ class ProteinRepository(BaseRepository[ProteinDB, ProteinCreate, Dict[str, Any]]
                 return None
             
             # Merge with existing metadata
-            current_metadata = protein.metadata or {}
+            current_metadata = protein.extra_metadata or {}
             current_metadata.update(metadata)
             
-            protein.metadata = current_metadata
+            protein.extra_metadata = current_metadata
             self.db.commit()
             self.db.refresh(protein)
             

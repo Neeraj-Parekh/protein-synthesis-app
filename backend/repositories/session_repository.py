@@ -61,7 +61,7 @@ class SessionRepository(BaseRepository[UserSessionDB, Dict[str, Any], Dict[str, 
         # Create session data
         session_data = {
             'session_id': session_id,
-            'preferences': obj_in.get('preferences', {}),
+            'preferences': json.dumps(obj_in.get('preferences', {})),
         }
         
         try:

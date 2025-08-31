@@ -22,7 +22,7 @@ END`;
 
   describe('parsePDBFile', () => {
     it('should parse valid PDB content correctly', async () => {
-      const protein = await parsePDBFile(samplePDBContent);
+      const protein = await parsePDBFile(samplePDBContent, { includeWater: true });
 
       expect(protein.id).toBe('2PTC');
       expect(protein.name).toContain('BOVINE PANCREATIC TRYPSIN INHIBITOR');
@@ -32,7 +32,7 @@ END`;
     });
 
     it('should handle metadata correctly', async () => {
-      const protein = await parsePDBFile(samplePDBContent);
+      const protein = await parsePDBFile(samplePDBContent, { includeWater: true });
 
       expect(protein.metadata.classification).toBe('HYDROLASE/HYDROLASE INHIBITOR');
       expect(protein.metadata.pdbId).toBe('2PTC');
@@ -44,8 +44,8 @@ END`;
       const pdbWithHydrogens = samplePDBContent + `
 ATOM      7  H   ALA A   1      -8.500   4.800  -0.300  1.00 10.00           H  `;
 
-      const proteinWithH = await parsePDBFile(pdbWithHydrogens, { includeHydrogens: true });
-      const proteinWithoutH = await parsePDBFile(pdbWithHydrogens, { includeHydrogens: false });
+      const proteinWithH = await parsePDBFile(pdbWithHydrogens, { includeHydrogens: true, includeWater: true });
+      const proteinWithoutH = await parsePDBFile(pdbWithHydrogens, { includeHydrogens: false, includeWater: true });
 
       expect(proteinWithH.atoms).toHaveLength(7);
       expect(proteinWithoutH.atoms).toHaveLength(6);
@@ -60,8 +60,8 @@ ATOM      7  H   ALA A   1      -8.500   4.800  -0.300  1.00 10.00           H  
     });
 
     it('should filter hetero atoms when specified', async () => {
-      const proteinWithHetero = await parsePDBFile(samplePDBContent, { includeHetero: true });
-      const proteinWithoutHetero = await parsePDBFile(samplePDBContent, { includeHetero: false });
+      const proteinWithHetero = await parsePDBFile(samplePDBContent, { includeHetero: true, includeWater: true });
+      const proteinWithoutHetero = await parsePDBFile(samplePDBContent, { includeHetero: false, includeWater: true });
 
       expect(proteinWithHetero.atoms).toHaveLength(6);
       expect(proteinWithoutHetero.atoms).toHaveLength(5); // Excludes HETATM
@@ -99,7 +99,7 @@ ATOM      7  H   ALA A   1      -8.500   4.800  -0.300  1.00 10.00           H  
     });
 
     it('should assign correct atom types', async () => {
-      const protein = await parsePDBFile(samplePDBContent);
+      const protein = await parsePDBFile(samplePDBContent, { includeWater: true });
 
       const backboneAtom = protein.atoms.find(atom => atom.name === 'CA');
       const sidechainAtom = protein.atoms.find(atom => atom.name === 'CB');
@@ -201,7 +201,7 @@ END`;
 HETATM    1  O   HOH A 101       1.234   5.678   9.012  1.00 20.00           O  
 END`;
 
-      const protein = await parsePDBFile(hetatomOnlyPDB);
+      const protein = await parsePDBFile(hetatomOnlyPDB, { includeWater: true });
       expect(protein.atoms).toHaveLength(1);
       expect(protein.atoms[0].atomType).toBe('hetero');
     });

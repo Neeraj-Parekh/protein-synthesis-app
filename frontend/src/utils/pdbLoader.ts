@@ -42,6 +42,11 @@ export async function parsePDBFile(
   } = options;
 
   try {
+    // Validate input
+    if (!pdbContent || pdbContent.trim().length === 0) {
+      throw new PDBParseError('PDB content cannot be empty');
+    }
+
     const lines = pdbContent.split('\n');
     const atoms: Atom[] = [];
     const residues: Map<string, Residue> = new Map();
@@ -151,6 +156,12 @@ export async function parsePDBFile(
     // Calculate center of mass
     const centerOfMass = vector3Utils.center(positions);
 
+    // Validate that we have some meaningful content
+    const hasValidStructure = atoms.length > 0 || chains.size > 0 || proteinId.length > 0;
+    if (!hasValidStructure) {
+      throw new PDBParseError('No valid protein structure found in PDB content');
+    }
+
     // Create protein structure
     const proteinStructure: ProteinStructure = {
       id: proteinId,
@@ -203,6 +214,9 @@ function parseSource(line: string, metadata: ProteinMetadata): void {
   const source = line.substring(10, 79).trim();
   if (source.includes('ORGANISM_SCIENTIFIC:')) {
     metadata.organism = source.split('ORGANISM_SCIENTIFIC:')[1].split(';')[0].trim();
+  } else {
+    // Handle simple SOURCE format like "BOVINE (BOS TAURUS) PANCREAS"
+    metadata.organism = source;
   }
 }
 

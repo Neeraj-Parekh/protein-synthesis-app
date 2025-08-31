@@ -37,11 +37,11 @@ class AnalysisRepository(BaseRepository[AnalysisResultDB, Dict[str, Any], Dict[s
         if obj_in['analysis_type'] not in valid_types:
             raise ValidationError(f"Invalid analysis type. Must be one of: {', '.join(valid_types)}")
         
-        # Validate protein_id format (should be UUID)
+        # Validate protein_id format (should be integer)
         try:
-            uuid.UUID(obj_in['protein_id'])
-        except ValueError:
-            raise ValidationError("Invalid protein_id format")
+            int(obj_in['protein_id'])
+        except (ValueError, TypeError):
+            raise ValidationError("Invalid protein_id format - must be an integer")
         
         # Validate result_data is serializable
         try:
@@ -60,9 +60,9 @@ class AnalysisRepository(BaseRepository[AnalysisResultDB, Dict[str, Any], Dict[s
         
         if 'protein_id' in obj_in:
             try:
-                uuid.UUID(obj_in['protein_id'])
-            except ValueError:
-                raise ValidationError("Invalid protein_id format")
+                int(obj_in['protein_id'])
+            except (ValueError, TypeError):
+                raise ValidationError("Invalid protein_id format - must be an integer")
         
         if 'result_data' in obj_in:
             try:
@@ -77,12 +77,8 @@ class AnalysisRepository(BaseRepository[AnalysisResultDB, Dict[str, Any], Dict[s
         # Validate input data
         self.validate_create_data(obj_in)
         
-        # Generate unique ID
-        analysis_id = str(uuid.uuid4())
-        
-        # Create analysis data
+        # Create analysis data (let database auto-generate ID)
         analysis_data = {
-            'id': analysis_id,
             'protein_id': obj_in['protein_id'],
             'analysis_type': obj_in['analysis_type'],
             'result_data': obj_in['result_data']

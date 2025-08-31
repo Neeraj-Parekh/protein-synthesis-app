@@ -348,14 +348,14 @@ async def forgot_password(
         reset_token = AuthUtils.generate_reset_token()
 
         # Save reset token
-        # TODO: Fix PasswordResetDB import - commenting out for CI/CD fix
-        # db_reset = PasswordResetDB(
-        #     user_id=user.id,
-        #     reset_token=reset_token,
-        #     expires_at=datetime.utcnow() + timedelta(hours=1)
-        # )
-        # db.add(db_reset)
-        # db.commit()
+        from models.user import PasswordResetDB
+        db_reset = PasswordResetDB(
+            user_id=user.id,
+            reset_token=reset_token,
+            expires_at=datetime.utcnow() + timedelta(hours=1)
+        )
+        db.add(db_reset)
+        db.commit()
 
         # Send reset email
         background_tasks.add_task(send_password_reset_email, user.email, reset_token)
@@ -366,11 +366,39 @@ async def forgot_password(
 @router.post("/reset-password")
 async def reset_password(reset_data: PasswordResetConfirm, db: Session = Depends(get_db)):
     """Reset password using token"""
-    # TODO: Temporary fix - return error for now until PasswordResetDB is properly imported
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Password reset functionality temporarily disabled"
-    )
+    from models.user import PasswordResetDB
+    
+    # Find valid reset token
+    reset_record = db.query(PasswordResetDB).filter(
+        PasswordResetDB.reset_token == reset_data.token,
+        PasswordResetDB.is_used == False,
+        PasswordResetDB.expires_at > datetime.utcnow()
+    ).first()
+    
+    if not reset_record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    # Get user
+    user = db.query(UserDB).filter(UserDB.id == reset_record.user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Update password
+    user.hashed_password = AuthUtils.hash_password(reset_data.new_password)
+    user.updated_at = datetime.utcnow()
+    
+    # Mark reset token as used
+    reset_record.is_used = True
+    
+    db.commit()
+    
+    return {"message": "Password reset successfully"}
 
 @router.post("/verify-email/{token}")
 async def verify_email(token: str, db: Session = Depends(get_db)):
@@ -546,3 +574,46 @@ def send_password_reset_email(email: str, token: str):
 
     except Exception as e:
         print(f"Failed to send password reset email: {e}")
+
+# Utility functions for backward compatibility with tests
+def verify_password(password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return AuthUtils.verify_password(password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """Hash a password"""
+    return AuthUtils.hash_password(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create an access token"""
+    # Try to get user_id first (integer), then fall back to sub (any string/int)
+    user_id = data.get("user_id")
+    if user_id is not None:
+        return AuthUtils.generate_token(int(user_id), expires_delta)
+    
+    # For backward compatibility, support any "sub" value
+    sub = data.get("sub")
+    if sub is not None:
+        # If sub is numeric, treat as user_id, otherwise create a generic token
+        try:
+            return AuthUtils.generate_token(int(sub), expires_delta)
+        except (ValueError, TypeError):
+            # For non-numeric subjects, create a generic JWT token
+            import jwt
+            import os
+            
+            if expires_delta:
+                expire = datetime.utcnow() + expires_delta
+            else:
+                expire = datetime.utcnow() + timedelta(hours=24)
+            
+            payload = {
+                "sub": str(sub),
+                "exp": expire,
+                "iat": datetime.utcnow()
+            }
+            
+            secret_key = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+            return jwt.encode(payload, secret_key, algorithm="HS256")
+    
+    raise ValueError("Missing user_id or sub in token data")

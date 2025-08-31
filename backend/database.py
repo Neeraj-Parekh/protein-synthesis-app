@@ -65,8 +65,8 @@ else:
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for models
-Base = declarative_base()
+# Import Base from models
+from models.base import Base
 
 def get_db() -> Generator[Session, None, None]:
     """
@@ -82,9 +82,10 @@ def create_tables():
     """
     Create all database tables
     """
-    # Import all models to ensure they're registered
-    from models.protein import ProteinDB, AnalysisResultDB, UserSessionDB
+    # Import models to ensure they're registered with Base
+    from models.protein import ProteinDB, AnalysisDB, UserSessionDB
     from models.user import UserDB, UserSessionDB as AuthUserSessionDB, PasswordResetDB
+    
     Base.metadata.create_all(bind=engine)
 
 def init_database():
