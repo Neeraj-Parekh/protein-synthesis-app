@@ -161,7 +161,7 @@ export const applyCustomColorScheme = (component: any, schemeName: string) => {
 /**
  * Create NGL selection string for a color category
  */
-const createSelectionForCategory = (category: string, scheme: CustomColorScheme): string => {
+const createSelectionForCategory = (category: string, _scheme: CustomColorScheme): string => {
   // This is a simplified version - in practice, you'd need to analyze
   // the structure and create appropriate selections
   switch (category) {

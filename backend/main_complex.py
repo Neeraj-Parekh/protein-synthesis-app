@@ -1,9 +1,12 @@
 """
 Main FastAPI application for Protein Synthesis Web Application
 """
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 import uvicorn
 import os
 
@@ -11,6 +14,9 @@ import os
 from routers import auth, proteins, ai_models, analysis, export, users, real_ai_models, large_ai_models
 from database import init_database
 from middleware.error_handler import ErrorHandlingMiddleware
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title="Protein Synthesis Web Application API",

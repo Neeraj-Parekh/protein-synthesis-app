@@ -9,19 +9,16 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Slider,
   Card,
   CardContent,
   Grid,
   Alert,
   CircularProgress,
   Tabs,
-  Tab,
-  IconButton,
-  Tooltip,
+  Tab
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
-import { ViewInAr, Science, Upload, Download, Settings } from '@mui/icons-material';
+import { ViewInAr, Science, Upload } from '@mui/icons-material';
 import { ProteinStructure } from '@/types';
 import NGLViewer from './NGLViewer';
 import { useDropzone } from 'react-dropzone';
