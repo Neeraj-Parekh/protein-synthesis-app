@@ -42,6 +42,36 @@ jest.mock('../../../utils/pdbLoader', () => ({
     '1CRN': 'https://example.com/1CRN.pdb',
     '1UBQ': 'https://example.com/1UBQ.pdb',
   },
+  SAMPLE_PROTEINS: {
+    '1CRN': {
+      pdbId: '1CRN',
+      name: 'Crambin',
+      description: 'Small plant protein',
+      features: ['Small size', 'Clear structure'],
+      difficulty: 'beginner',
+      residueCount: 46,
+      category: 'structure',
+      recommendedRepresentation: 'cartoon',
+      recommendedColorScheme: 'secondaryStructure'
+    },
+    '1UBQ': {
+      pdbId: '1UBQ',
+      name: 'Ubiquitin',
+      description: 'Small regulatory protein',
+      features: ['Regulatory', 'Small size'],
+      difficulty: 'beginner',
+      residueCount: 76,
+      category: 'structure',
+      recommendedRepresentation: 'cartoon',
+      recommendedColorScheme: 'secondaryStructure'
+    }
+  },
+  PDBParseError: class PDBParseError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'PDBParseError';
+    }
+  }
 }));
 
 // Mock react-dropzone
@@ -224,7 +254,7 @@ describe('ProteinViewer', () => {
   it('has sample protein options', () => {
     render(<ProteinViewer />);
     
-    expect(screen.getByLabelText('Load Sample')).toBeInTheDocument();
+    expect(screen.getByLabelText('Load Sample Protein')).toBeInTheDocument();
   });
 
   it('has all render option controls', () => {

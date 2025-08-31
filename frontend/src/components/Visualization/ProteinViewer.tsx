@@ -252,8 +252,9 @@ export const ProteinViewer: React.FC<ProteinViewerProps> = ({
 
           {/* Representation */}
           <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel>Representation</InputLabel>
+            <InputLabel id="representation-label">Representation</InputLabel>
             <Select
+              labelId="representation-label"
               value={renderOptions.representation}
               label="Representation"
               onChange={(e) => handleRenderOptionChange('representation', e.target.value)}
@@ -307,8 +308,9 @@ export const ProteinViewer: React.FC<ProteinViewerProps> = ({
 
           {/* Color Scheme */}
           <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel>Color Scheme</InputLabel>
+            <InputLabel id="color-scheme-label">Color Scheme</InputLabel>
             <Select
+              labelId="color-scheme-label"
               value={renderOptions.colorScheme}
               label="Color Scheme"
               onChange={(e) => handleRenderOptionChange('colorScheme', e.target.value)}
@@ -370,8 +372,9 @@ export const ProteinViewer: React.FC<ProteinViewerProps> = ({
 
           {/* Quality */}
           <FormControl size="small" sx={{ minWidth: 100 }}>
-            <InputLabel>Quality</InputLabel>
+            <InputLabel id="quality-label">Quality</InputLabel>
             <Select
+              labelId="quality-label"
               value={renderOptions.quality}
               label="Quality"
               onChange={(e) => handleRenderOptionChange('quality', e.target.value)}
@@ -396,8 +399,9 @@ export const ProteinViewer: React.FC<ProteinViewerProps> = ({
 
           {/* Sample Proteins */}
           <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Load Sample Protein</InputLabel>
+            <InputLabel id="sample-protein-label">Load Sample Protein</InputLabel>
             <Select
+              labelId="sample-protein-label"
               value={state.selectedSample}
               label="Load Sample Protein"
               onChange={(e) => loadSample(e.target.value as keyof typeof SAMPLE_PDB_URLS)}

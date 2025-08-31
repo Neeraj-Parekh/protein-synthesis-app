@@ -42,6 +42,11 @@ export async function parsePDBFile(
   } = options;
 
   try {
+    // Validate input
+    if (!pdbContent || pdbContent.trim().length === 0) {
+      throw new PDBParseError('PDB content cannot be empty');
+    }
+
     const lines = pdbContent.split('\n');
     const atoms: Atom[] = [];
     const residues: Map<string, Residue> = new Map();
@@ -203,6 +208,9 @@ function parseSource(line: string, metadata: ProteinMetadata): void {
   const source = line.substring(10, 79).trim();
   if (source.includes('ORGANISM_SCIENTIFIC:')) {
     metadata.organism = source.split('ORGANISM_SCIENTIFIC:')[1].split(';')[0].trim();
+  } else {
+    // Handle simple SOURCE format like "BOVINE (BOS TAURUS) PANCREAS"
+    metadata.organism = source;
   }
 }
 
