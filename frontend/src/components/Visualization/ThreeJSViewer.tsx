@@ -10,7 +10,7 @@ import {
   ZoomOut,
   CameraAlt 
 } from '@mui/icons-material';
-import { ProteinStructure, RenderOptions, Vector3 } from '../../types';
+import { ProteinStructure, RenderOptions } from '../../types';
 
 interface ThreeJSViewerProps {
   protein?: ProteinStructure;
@@ -398,7 +398,7 @@ export const ThreeJSViewer: React.FC<ThreeJSViewerProps> = ({
   }, []);
 
   // Get chain color
-  const getChainColor = useCallback((chainId: string, colorScheme: string): number => {
+  const getChainColor = useCallback((chainId: string, _colorScheme: string): number => {
     // Simple chain coloring
     const colors = [0xFF6B6B, 0x4ECDC4, 0x45B7D1, 0x96CEB4, 0xFECA57, 0xFF9FF3];
     const index = chainId.charCodeAt(0) % colors.length;

@@ -75,13 +75,15 @@ const SequenceViewer: React.FC<SequenceViewerProps> = ({
 
   const getResidueColor = (residue: string, position: number): string => {
     switch (colorScheme) {
-      case 'hydrophobicity':
+      case 'hydrophobicity': {
         const hydrophobicity = AMINO_ACID_PROPERTIES.hydrophobicity[residue as keyof typeof AMINO_ACID_PROPERTIES.hydrophobicity] || 0;
         return getHydrophobicityColor(hydrophobicity);
+      }
       
-      case 'charge':
+      case 'charge': {
         const charge = AMINO_ACID_PROPERTIES.charge[residue as keyof typeof AMINO_ACID_PROPERTIES.charge] || 0;
         return getChargeColor(charge);
+      }
       
       case 'secondary':
         if (analysisResults?.secondaryStructure) {

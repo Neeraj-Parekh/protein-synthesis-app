@@ -236,7 +236,7 @@ export function throttle<T extends (...args: any[]) => any>(
 // Lazy loading utility
 export function createLazyLoader<T>(
   loader: () => Promise<T>,
-  fallback?: T
+  _fallback?: T
 ): () => Promise<T> {
   let cached: T | null = null;
   let loading: Promise<T> | null = null;

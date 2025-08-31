@@ -9,9 +9,7 @@ import {
   ProteinMetadata,
   AminoAcidType,
   SecondaryStructureType,
-  SecondaryStructure,
-  BoundingBox,
-  Vector3
+  SecondaryStructure
 } from '../types';
 import { AMINO_ACID_PROPERTIES, boundingBoxUtils, vector3Utils } from '../types/utils';
 

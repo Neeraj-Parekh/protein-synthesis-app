@@ -71,7 +71,7 @@ const ModernProteinMesh: React.FC<{ protein: ProteinStructure; colorScheme: stri
       positions.push(atom.position.x, atom.position.y, atom.position.z);
       
       // Enhanced color schemes
-      let color = new THREE.Color();
+      const color = new THREE.Color();
       switch (colorScheme) {
         case 'cpk':
           switch (atom.element) {

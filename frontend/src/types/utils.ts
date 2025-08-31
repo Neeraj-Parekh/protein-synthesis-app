@@ -7,12 +7,9 @@ import {
   Vector3,
   BoundingBox,
   Atom,
-  Residue,
-  Chain,
   ProteinStructure,
   AminoAcidType,
   AminoAcidProperties,
-  SecondaryStructureType,
   ChemicalProperties,
   AminoAcidComposition,
 } from './protein';
@@ -589,9 +586,6 @@ export const proteinUtils = {
    * Create a minimal protein structure from sequence
    */
   createFromSequence: (id: string, name: string, sequence: string): Partial<ProteinStructure> => {
-    const composition = sequenceUtils.calculateComposition(sequence);
-    const properties = proteinUtils.calculateChemicalProperties(sequence);
-    
     return {
       id,
       name,

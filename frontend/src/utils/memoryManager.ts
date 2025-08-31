@@ -137,7 +137,7 @@ class MemoryManager {
       } else {
         size += Object.keys(obj).length * 8; // Object overhead
         for (const key in obj) {
-          if (obj.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
             size += key.length * 2; // Key size
             size += calculateSize(obj[key]); // Value size
           }

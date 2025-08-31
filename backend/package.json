@@ -1,0 +1,8 @@
+{
+  "name": "protein-synthesis-backend",
+  "version": "1.0.0",
+  "description": "Backend package.json for npm audit compatibility",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {}
+}

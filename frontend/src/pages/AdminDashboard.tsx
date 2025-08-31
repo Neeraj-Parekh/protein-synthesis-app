@@ -33,7 +33,6 @@ import {
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
   Add as AddIcon,
   People as PeopleIcon,
   Analytics as AnalyticsIcon,
