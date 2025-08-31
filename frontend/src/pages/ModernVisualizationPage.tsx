@@ -83,10 +83,11 @@ const ModernProteinMesh: React.FC<{ protein: ProteinStructure; colorScheme: stri
             default: color.setRGB(0.5, 0.5, 0.5);
           }
           break;
-        case 'rainbow':
+        case 'rainbow': {
           const hue = (atom.position.z + 50) / 100;
           color.setHSL(hue, 1, 0.5);
           break;
+        }
         default:
           color.setRGB(0.7, 0.7, 0.9);
       }

@@ -23,13 +23,10 @@ import {
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
-  InsertDriveFile as FileIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
-  GetApp as DownloadIcon
+  Visibility as ViewIcon
 } from '@mui/icons-material';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { uploadProtein, addProtein } from '../../store/slices/proteinSlice';
+import { useAppSelector } from '../../store/hooks';
 
 interface FileUploadProps {
   onUploadComplete?: (proteinId: string) => void;
@@ -53,7 +50,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   maxFileSize = 50, // 50MB default
   multiple = true
 }) => {
-  const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector(state => state.proteins);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
