@@ -574,3 +574,46 @@ def send_password_reset_email(email: str, token: str):
 
     except Exception as e:
         print(f"Failed to send password reset email: {e}")
+
+# Utility functions for backward compatibility with tests
+def verify_password(password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return AuthUtils.verify_password(password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """Hash a password"""
+    return AuthUtils.hash_password(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create an access token"""
+    # Try to get user_id first (integer), then fall back to sub (any string/int)
+    user_id = data.get("user_id")
+    if user_id is not None:
+        return AuthUtils.generate_token(int(user_id), expires_delta)
+    
+    # For backward compatibility, support any "sub" value
+    sub = data.get("sub")
+    if sub is not None:
+        # If sub is numeric, treat as user_id, otherwise create a generic token
+        try:
+            return AuthUtils.generate_token(int(sub), expires_delta)
+        except (ValueError, TypeError):
+            # For non-numeric subjects, create a generic JWT token
+            import jwt
+            import os
+            
+            if expires_delta:
+                expire = datetime.utcnow() + expires_delta
+            else:
+                expire = datetime.utcnow() + timedelta(hours=24)
+            
+            payload = {
+                "sub": str(sub),
+                "exp": expire,
+                "iat": datetime.utcnow()
+            }
+            
+            secret_key = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+            return jwt.encode(payload, secret_key, algorithm="HS256")
+    
+    raise ValueError("Missing user_id or sub in token data")

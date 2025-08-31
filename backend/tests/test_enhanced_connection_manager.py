@@ -101,8 +101,8 @@ class TestConnectionMetrics:
         assert metrics.total_requests == 3
         assert metrics.successful_requests == 2
         assert metrics.failed_requests == 1
-        assert metrics.success_rate == 2/3
-        assert metrics.error_rate == 1/3
+        assert abs(metrics.success_rate - 2/3) < 1e-10
+        assert abs(metrics.error_rate - 1/3) < 1e-10
         assert metrics.average_response_time == 1.0
     
     def test_recent_errors(self):
