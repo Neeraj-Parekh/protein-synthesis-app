@@ -348,14 +348,14 @@ async def forgot_password(
         reset_token = AuthUtils.generate_reset_token()
 
         # Save reset token
-        # TODO: Fix PasswordResetDB import - commenting out for CI/CD fix
-        # db_reset = PasswordResetDB(
-        #     user_id=user.id,
-        #     reset_token=reset_token,
-        #     expires_at=datetime.utcnow() + timedelta(hours=1)
-        # )
-        # db.add(db_reset)
-        # db.commit()
+        from models.user import PasswordResetDB
+        db_reset = PasswordResetDB(
+            user_id=user.id,
+            reset_token=reset_token,
+            expires_at=datetime.utcnow() + timedelta(hours=1)
+        )
+        db.add(db_reset)
+        db.commit()
 
         # Send reset email
         background_tasks.add_task(send_password_reset_email, user.email, reset_token)
@@ -366,11 +366,39 @@ async def forgot_password(
 @router.post("/reset-password")
 async def reset_password(reset_data: PasswordResetConfirm, db: Session = Depends(get_db)):
     """Reset password using token"""
-    # TODO: Temporary fix - return error for now until PasswordResetDB is properly imported
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Password reset functionality temporarily disabled"
-    )
+    from models.user import PasswordResetDB
+    
+    # Find valid reset token
+    reset_record = db.query(PasswordResetDB).filter(
+        PasswordResetDB.reset_token == reset_data.token,
+        PasswordResetDB.is_used == False,
+        PasswordResetDB.expires_at > datetime.utcnow()
+    ).first()
+    
+    if not reset_record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    # Get user
+    user = db.query(UserDB).filter(UserDB.id == reset_record.user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Update password
+    user.hashed_password = AuthUtils.hash_password(reset_data.new_password)
+    user.updated_at = datetime.utcnow()
+    
+    # Mark reset token as used
+    reset_record.is_used = True
+    
+    db.commit()
+    
+    return {"message": "Password reset successfully"}
 
 @router.post("/verify-email/{token}")
 async def verify_email(token: str, db: Session = Depends(get_db)):
