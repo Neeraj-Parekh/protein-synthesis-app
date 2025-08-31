@@ -1,0 +1,221 @@
+@startuml ProteinSynthesisActivityDiagram
+!theme plain
+scale 0.75
+title Protein Synthesis Web Application - Complete Activity Diagram
+
+|User|
+start
+:Access Application;
+
+' Authentication Flow
+if (Already Authenticated?) then (No)
+  :Display Login/Register Options;
+  if (New User?) then (Yes)
+    :Click Register;
+    :Enter Registration Details;
+    |Backend|
+    :Validate Registration Data;
+    if (Valid & Email Available?) then (No)
+      :Show Registration Error;
+      stop
+    else (Yes)
+      :Create User Account;
+      :Send Verification Email;
+      :Show "Check Email" Message;
+      stop
+    endif
+  else (Existing User)
+    :Click Login;
+    :Enter Credentials;
+    |Backend|
+    :Validate Credentials;
+    if (Valid Login?) then (No)
+      :Show Login Error;
+      if (Forgot Password?) then (Yes)
+        :Request Password Reset;
+        |Backend|
+        :Send Reset Email;
+        :Show "Check Email" Message;
+        stop
+      else (No)
+        stop
+      endif
+    else (Yes)
+      :Generate JWT Token;
+      :Create User Session;
+      |Frontend|
+      :Store Token & User Data;
+    endif
+  endif
+else (Yes)
+  |Frontend|
+  :Load Stored Authentication;
+endif
+
+:Display Main Dashboard;
+:Show User Profile & Options;
+
+' Main Application Flow
+:Select Main Function;
+
+split
+  |Profile Management|
+  :Access User Profile;
+  if (Update Profile?) then (Yes)
+    :Edit Profile Information;
+    |Backend|
+    :Validate & Update User Data;
+    :Show Success Message;
+  endif
+  if (Change Password?) then (Yes)
+    :Enter Current & New Password;
+    |Backend|
+    :Verify Current Password;
+    if (Current Password Valid?) then (No)
+      :Show Password Error;
+    else (Yes)
+      :Update Password;
+      :Show Success Message;
+    endif
+  endif
+
+split again
+  |AI Generation|
+  :Access AI Generation;
+  if (User Has Permission?) then (No)
+    :Show Access Denied;
+    stop
+  else (Yes)
+    :Configure AI Parameters;
+    if (Valid Parameters?) then (No)
+      :Show Parameter Error;
+    else (Yes)
+      |AI Service|
+      :Generate Protein Sequence;
+      if (Generation Successful?) then (No)
+        :Show Generation Error;
+      else (Yes)
+        |Backend|
+        :Store Generated Protein;
+        :Log User Activity;
+        :Show Generation Results;
+      endif
+    endif
+  endif
+
+split again
+  |Data Management|
+  :Access Data Loading;
+  if (Upload File or PDB ID?) then (Upload)
+    :Select PDB File;
+    |Backend|
+    :Validate File Format;
+    :Parse Protein Structure;
+    if (Valid Structure?) then (No)
+      :Show Parse Error;
+    else (Yes)
+      :Store Protein Data;
+      :Associate with User;
+      :Show Upload Success;
+    endif
+  else (PDB ID)
+    :Enter PDB ID;
+    |External API|
+    :Fetch from Protein Database;
+    if (Data Found?) then (No)
+      :Show Not Found Error;
+    else (Yes)
+      |Backend|
+      :Store Retrieved Data;
+      :Associate with User;
+      :Show Retrieval Success;
+    endif
+  endif
+
+split again
+  |3D Visualization|
+  :Select Protein for Visualization;
+  if (Protein Available?) then (No)
+    :Show No Data Message;
+  else (Yes)
+    |Frontend|
+    :Initialize 3D Viewer;
+    :Load Protein Data;
+    :Select Representation Mode;
+    :Render 3D Model;
+    :Enable Interactive Controls;
+    :Display Visualization;
+    if (Save View?) then (Yes)
+      |Backend|
+      :Store View Settings;
+      :Associate with User Session;
+    endif
+  endif
+
+split again
+  |Analysis & Comparison|
+  :Select Analysis Type;
+  :Choose Protein(s);
+  if (Sufficient Data?) then (No)
+    :Show Selection Error;
+  else (Yes)
+    |Backend|
+    :Perform Selected Analysis;
+    :Generate Analysis Results;
+    :Store Results with User;
+    :Display Analysis Report;
+    if (Export Results?) then (Yes)
+      :Select Export Format;
+      :Generate Export File;
+      :Download File;
+    endif
+  endif
+
+split again
+  |Administration|
+  if (User is Admin?) then (Yes)
+    :Access Admin Panel;
+    if (Manage Users?) then (Yes)
+      :View User List;
+      :Select User Actions;
+      |Backend|
+      :Perform User Management;
+      :Log Admin Activity;
+      :Show Action Results;
+    endif
+    if (System Monitoring?) then (Yes)
+      :View System Metrics;
+      :Check Application Health;
+      :Review Usage Analytics;
+    endif
+  else (No)
+    :Show Access Denied;
+  endif
+end split
+
+|User|
+:Review Results & Data;
+
+' Session Management
+if (Save Session?) then (Yes)
+  |Backend|
+  :Store User Session State;
+  :Save Workspace Data;
+  :Update User Preferences;
+endif
+
+if (Continue Working?) then (Yes)
+  :Return to Main Functions;
+else (No)
+  :Choose Logout;
+  |Backend|
+  :Invalidate JWT Token;
+  :End User Session;
+  :Clear Authentication;
+  |Frontend|
+  :Clear Stored Data;
+  :Redirect to Login;
+  stop
+endif
+
+@enduml

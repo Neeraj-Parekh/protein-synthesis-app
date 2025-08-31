@@ -1,0 +1,416 @@
+name: Protein Synthesis App CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  # Frontend Tests
+  frontend-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+        
+    - name: Run frontend linting
+      run: |
+        cd frontend
+        npm run lint
+        
+    - name: Run frontend type checking
+      run: |
+        cd frontend
+        npm run type-check
+        
+    - name: Run frontend unit tests
+      run: |
+        cd frontend
+        npm run test:coverage
+        
+    - name: Upload frontend coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./frontend/coverage/lcov.info
+        flags: frontend
+        name: frontend-coverage
+
+  # Backend Tests
+  backend-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: backend/requirements.txt
+        
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        
+    - name: Run backend linting
+      run: |
+        cd backend
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        
+    - name: Run backend tests
+      run: |
+        cd backend
+        pytest --cov=. --cov-report=xml
+        
+    - name: Upload backend coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+
+  # AI Service Tests
+  ai-service-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: ai-service/requirements.txt
+        
+    - name: Install AI service dependencies
+      run: |
+        cd ai-service
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-asyncio
+        
+    - name: Run AI service linting
+      run: |
+        cd ai-service
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        
+    - name: Run AI service tests
+      run: |
+        cd ai-service
+        pytest --cov=. --cov-report=xml --cov-report=html
+        
+    - name: Upload AI service coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./ai-service/coverage.xml
+        flags: ai-service
+        name: ai-service-coverage
+
+  # Integration Tests
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: [frontend-test, backend-test, ai-service-test]
+    
+    services:
+      redis:
+        image: redis:6-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        cd frontend && npm ci
+        cd ../backend && npm ci
+        cd ../ai-service && pip install -r requirements.txt
+        
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+        
+    - name: Start services
+      run: |
+        # Start AI service in background
+        cd ai-service
+        python -m uvicorn main:app --host 0.0.0.0 --port 8001 &
+        
+        # Start backend in background
+        cd ../backend
+        npm run start &
+        
+        # Wait for services to start
+        sleep 10
+        
+    - name: Run integration tests
+      run: |
+        npm run test:integration
+        
+    - name: Stop services
+      run: |
+        pkill -f "uvicorn"
+        pkill -f "node"
+
+  # End-to-End Tests
+  e2e-test:
+    runs-on: ubuntu-latest
+    needs: [integration-test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        cd frontend && npm ci
+        cd ../backend && npm ci
+        cd ../ai-service && pip install -r requirements.txt
+        
+    - name: Install Playwright
+      run: |
+        cd frontend
+        npx playwright install --with-deps
+        
+    - name: Build and start application
+      run: |
+        # Build frontend
+        cd frontend
+        npm run build
+        
+        # Start all services
+        cd ..
+        npm run start:prod &
+        
+        # Wait for application to start
+        sleep 15
+        
+    - name: Run E2E tests
+      run: |
+        cd frontend
+        npm run test:e2e
+        
+    - name: Upload E2E test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: playwright-report
+        path: frontend/playwright-report/
+        retention-days: 30
+
+  # Security Audit
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Run npm audit (Frontend)
+      run: |
+        cd frontend
+        npm audit --audit-level moderate
+        
+    - name: Run npm audit (Backend)
+      run: |
+        cd backend
+        npm audit --audit-level moderate
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Run Python security audit
+      run: |
+        cd ai-service
+        pip install safety
+        safety check -r requirements.txt
+
+  # Performance Tests
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: [integration-test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        cd frontend && npm ci
+        cd ../backend && npm ci
+        
+    - name: Build and start application
+      run: |
+        cd frontend
+        npm run build
+        cd ..
+        npm run start:prod &
+        sleep 15
+        
+    - name: Run Lighthouse CI
+      run: |
+        npm install -g @lhci/cli@0.12.x
+        lhci autorun
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # Build and Deploy (only on main branch)
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    needs: [frontend-test, backend-test, ai-service-test, e2e-test, security-audit]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        cd frontend && npm ci
+        cd ../backend && npm ci
+        cd ../ai-service && pip install -r requirements.txt
+        
+    - name: Build application
+      run: |
+        npm run build:prod
+        
+    - name: Build Docker images
+      run: |
+        docker build -t protein-synthesis-frontend ./frontend
+        docker build -t protein-synthesis-backend ./backend
+        docker build -t protein-synthesis-ai-service ./ai-service
+        
+    - name: Run security scan on Docker images
+      run: |
+        # Install Trivy
+        sudo apt-get update
+        sudo apt-get install wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install trivy
+        
+        # Scan images
+        trivy image protein-synthesis-frontend
+        trivy image protein-synthesis-backend
+        trivy image protein-synthesis-ai-service
+        
+    - name: Deploy to staging
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "Deploying to staging environment..."
+        # Add deployment commands here
+        
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests..."
+        # Add smoke test commands here
+        
+    - name: Deploy to production
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "Deploying to production environment..."
+        # Add production deployment commands here
+
+  # Notification
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build-and-deploy]
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: needs.build-and-deploy.result == 'success'
+      run: |
+        echo "✅ Deployment successful!"
+        # Add notification logic (Slack, email, etc.)
+        
+    - name: Notify on failure
+      if: needs.build-and-deploy.result == 'failure'
+      run: |
+        echo "❌ Deployment failed!"
+        # Add failure notification logic
